@@ -1,25 +1,40 @@
 package Clases;
 
-
+import Formularios.FrmQR;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
 import java.util.Scanner;
 import javax.swing.JOptionPane;
+
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.WriterException;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
+import java.awt.Image;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JLabel;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 /**
  *
  * @author Samuel David Ortiz
  */
 public class UsuarioClass {
+
     private String usuario;
     private String codigo;
     private String nombres;
@@ -28,6 +43,10 @@ public class UsuarioClass {
     private String contraseña2;
     private String fechaNac;
     
+    private ImageIcon Img;
+    private Icon icono;
+    private JLabel label;
+
     public String claveMurci(String texto) {
         texto = texto.replace('m', '0');
         texto = texto.replace('M', '0');
@@ -52,16 +71,27 @@ public class UsuarioClass {
         return texto;
     }
     
-    public void nuevoUsuario(String codigo, String nombres, String apellidos, String fechaNac, String usuario, 
-            String pass1, String pass2) {
+    public UsuarioClass(){
+        
+    }
+    
+    public UsuarioClass(JLabel label){
+        this.label = label;
+    }
+
+    public void nuevoUsuario(String codigo, String nombres, String apellidos, String fechaNac, String usuario,
+            String pass1, String pass2) throws WriterException {
         //String usuario, String email, String contraseña1,  String contraseña2){
+        
+        this.codigo = codigo;
+        
         try {
             File file = new File("usuarios.txt");
 
             FileWriter archivo = new FileWriter(file.getAbsoluteFile(), true);
 
-            String texto =  codigo + "," + nombres + "," + apellidos + "," + fechaNac + "," +claveMurci(usuario) + "," + 
-                    claveMurci(pass1) + "," + claveMurci(pass2);
+            String texto = codigo + "," + nombres + "," + apellidos + "," + fechaNac + "," + claveMurci(usuario) + ","
+                    + claveMurci(pass1) + "," + claveMurci(pass2);
 
             PrintWriter imprimir = new PrintWriter(archivo);
             imprimir.println(texto);
@@ -70,7 +100,38 @@ public class UsuarioClass {
         } catch (IOException ex) {
             //Logger.getLogger(UsuarioJuego.class.getName()).log(Level.SEVERE, null, ex);
         }
-        JOptionPane.showMessageDialog(null, "Usuario creado exitosamente");
+
+        int dialogButton = JOptionPane.YES_NO_OPTION;
+
+        JOptionPane.showConfirmDialog(null, "Usuario creado exitosamente\nDesea ver el codigo QR", "Usuario creado", dialogButton);
+
+        try {
+            QRCodeWriter qrCode = new QRCodeWriter();
+            BitMatrix bqr = qrCode.encode(codigo, BarcodeFormat.QR_CODE.QR_CODE, 200, 200);
+            Path pQr = FileSystems.getDefault().getPath("./src/Images/QR/" + codigo + ".png");
+            MatrixToImageWriter.writeToPath(bqr, "PNG", pQr);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error " + e.getMessage());
+        }
+
+        if (dialogButton == JOptionPane.YES_OPTION) {
+            System.out.println("Mostar codigo QR");
+            //paintimages();
+            new FrmQR(this.codigo).setVisible(true);
+        } else {
+            System.out.println("No mostrar QR");
+        }
+
+    }
+    
+    public void paintimages() {
+        //URL url = this.getClass().getResource("src/images/" + image + ".png");
+        //Img = new ImageIcon(getClass().getResource(image + ".png"));
+        Img = new ImageIcon("./src/Images/QR/" + this.codigo + ".png");
+        System.out.println("./src/Images/QR/" + this.codigo + ".png");
+        icono = new ImageIcon(Img.getImage().getScaledInstance(70, 75,
+                Image.SCALE_DEFAULT));
+        label.setIcon(icono);
     }
 
     public boolean validarUsuario(String usuario, String contraseña) {
@@ -83,8 +144,8 @@ public class UsuarioClass {
             while (myReader.hasNextLine()) {
                 String data = myReader.nextLine();
                 u = data.split(",");
-                
-                if(u[4].equals(claveMurci(usuario)) && u[6].equals(claveMurci(contraseña))){
+
+                if (u[4].equals(claveMurci(usuario)) && u[6].equals(claveMurci(contraseña))) {
                     isLogin = true;
                     this.setNombres(u[2] + " " + u[3]);
                     System.out.println("data = " + this.getNombres());
@@ -95,7 +156,7 @@ public class UsuarioClass {
             System.out.println("An error occurred.");
             e.printStackTrace();
         }
-        
+
         return isLogin;
     }
 

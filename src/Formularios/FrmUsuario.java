@@ -5,10 +5,16 @@
  */
 package Formularios;
 
+import Clases.Reloj1;
+import Clases.UsuarioClass;
+import com.google.zxing.WriterException;
+import java.awt.Color;
 import java.awt.Image;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
@@ -27,10 +33,17 @@ public class FrmUsuario extends javax.swing.JFrame {
     File archivo;
     private boolean validador;
     private String mensaje;
+    Reloj1 reloj = new Reloj1();
 
     public FrmUsuario() {
         initComponents();
         
+        reloj.setLblReloj(lblReloj);
+        reloj.start();
+
+        lblReloj.setBackground(Color.black);
+        lblReloj.setOpaque(true);
+
         lblPass2.setVisible(false);
         txtPass2.setVisible(false);
         this.txtCodigo.setText(generarCodigo());
@@ -220,9 +233,19 @@ public class FrmUsuario extends javax.swing.JFrame {
         jPanel3.setLayout(new java.awt.GridLayout(1, 0, 15, 15));
 
         jButton1.setText("Crear Usuario");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
         jPanel3.add(jButton1);
 
         jButton2.setText("Cancelar");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
         jPanel3.add(jButton2);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -234,9 +257,9 @@ public class FrmUsuario extends javax.swing.JFrame {
                 .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(67, Short.MAX_VALUE)
+                .addContainerGap(74, Short.MAX_VALUE)
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, 505, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(80, 80, 80))
+                .addGap(73, 73, 73))
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(layout.createSequentialGroup()
                     .addContainerGap()
@@ -262,13 +285,13 @@ public class FrmUsuario extends javax.swing.JFrame {
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
-    private String generarCodigo(){
+    private String generarCodigo() {
         Date date = new Date();
         SimpleDateFormat DateFor = new SimpleDateFormat("yyyyMMddHHmmss");
-        
+
         return DateFor.format(date);
     }
-    
+
     private void txtNombreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtNombreActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_txtNombreActionPerformed
@@ -277,6 +300,49 @@ public class FrmUsuario extends javax.swing.JFrame {
         lblPass2.setVisible(true);
         txtPass2.setVisible(true);
     }//GEN-LAST:event_txtPass1KeyReleased
+
+    private void txtCodigoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtCodigoActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtCodigoActionPerformed
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        this.dispose();
+    }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        UsuarioClass usuario = new UsuarioClass();
+
+        validarCampos();
+
+        if (isValidador()) {
+            if (String.valueOf(txtPass1.getPassword()).equals(String.valueOf(txtPass2.getPassword()))) {
+                try {
+                    //JOptionPane.showMessageDialog(null, "Son iguales");
+                    
+                    usuario.nuevoUsuario(txtCodigo.getText(), txtDPI.getText(), txtNombre.getText(), txtApellidos.getText(), txtUsuario.getText(),
+                            String.valueOf(txtPass1.getPassword()), String.valueOf(txtPass2.getPassword()));
+                } catch (WriterException ex) {
+                    Logger.getLogger(FrmUsuario.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
+                txtDPI.setText("");
+                txtNombre.setText("");
+                txtApellidos.setText("");
+                txtUsuario.setText("");
+                txtPass1.setText("");
+                txtPass2.setText("");
+                lblPass2.setVisible(false);
+                txtPass2.setVisible(false);
+                this.txtCodigo.setText(generarCodigo());
+                //this.dispose();
+
+            } else {
+                JOptionPane.showMessageDialog(null, "Las contraseñas no coinciden, intente de nuevo");
+                txtPass1.requestFocus();
+                txtPass1.selectAll();
+            }
+        }
+    }//GEN-LAST:event_jButton1ActionPerformed
 
     private void lblImageMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblImageMouseClicked
         int resultado;
@@ -294,19 +360,55 @@ public class FrmUsuario extends javax.swing.JFrame {
                 ImageIcon Img = new ImageIcon(this.archivo.toString());
 
                 Icon icono = new ImageIcon(Img.getImage().getScaledInstance(lblImage.getWidth(), lblImage.getHeight(),
-                        Image.SCALE_DEFAULT));
-                lblImage.setIcon(icono);
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(null, "Error al abrir " + ex);
-            }
+                    Image.SCALE_DEFAULT));
+            lblImage.setIcon(icono);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, "Error al abrir " + ex);
+        }
         }
 
         //JOptionPane.showMessageDialog(null, "HOLA", "Seleccion de imagen", JOptionPane.ERROR_MESSAGE);
     }//GEN-LAST:event_lblImageMouseClicked
 
-    private void txtCodigoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtCodigoActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_txtCodigoActionPerformed
+    private void validarCampos() {
+
+        mensaje = "";
+        setValidador(false);
+
+        if (txtCodigo.getText().equals("")) {
+            mensaje = "El campo " + lblCodigo.getText() + " no puede estar vacio.\n";
+        }
+        if (txtNombre.getText().equals("")) {
+            mensaje += "El campo " + lblNombres.getText() + " no puede estar vacio.\n";
+        }
+        if (txtApellidos.getText().equals("")) {
+            mensaje += "El campo " + lblApellidos.getText() + " no puede estar vacio.\n";
+        }
+        if (txtDPI.getText().equals("")) {
+            mensaje += "El campo " + lblDPI.getText() + " no puede estar vacio.\n";
+        }
+        if (txtUsuario.getText().equals("")) {
+            mensaje += "El campo " + lblUsuario.getText() + " no puede estar vacio.\n";
+        }
+        if (String.valueOf(txtPass1.getPassword()).equals("")) {
+            mensaje += "El campo " + lblPass1.getText() + " no puede estar vacio.\n";
+        }
+
+        if (!mensaje.equals("")) {
+            JOptionPane.showMessageDialog(null, "Error\n\n" + this.mensaje);
+        } else {
+            setValidador(true);
+        }
+
+    }
+
+    public boolean isValidador() {
+        return validador;
+    }
+
+    public void setValidador(boolean validador) {
+        this.validador = validador;
+    }
 
     /**
      * @param args the command line arguments
